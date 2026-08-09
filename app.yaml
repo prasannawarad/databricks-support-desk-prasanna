@@ -1,19 +1,20 @@
 command: ['flask', '--app', 'app.py', 'run', '--host', '0.0.0.0', '--port', '8000']
 
 env:
-  # Values come from the Lakebase Connect modal ("Parameters only").
-  # No passwords here: the app mints short-lived OAuth tokens at runtime.
   - name: PGHOST
-    value: '<ENDPOINT_HOST>'          # ep-xxxx.database.<region>.cloud.databricks.com
+    value: 'ep-young-leaf-d8ghsve3.database.us-east-2.cloud.databricks.com'
+
   - name: PGDATABASE
     value: 'databricks_postgres'
+
   - name: PGUSER
-    value: '<DATABRICKS_CLIENT_ID>'   # app's service principal client ID.
-                                      # Optional: db.py falls back to the
-                                      # DATABRICKS_CLIENT_ID the platform injects.
+    value: '5b192094-9293-4ebd-8734-7f77c0ffd2a1'
+
   - name: PGPORT
     value: '5432'
+
   - name: PGSSLMODE
     value: 'require'
+
   - name: ENDPOINT_NAME
-    value: 'projects/<project-id>/branches/<branch-id>/endpoints/<endpoint-id>'
+    value: 'projects/new-database/branches/production/endpoints/primary'
