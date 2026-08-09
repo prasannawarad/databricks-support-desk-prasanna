@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="counters">
+  <div class="counter rise" style="--i:0">
+    <div class="n">{{ total }}</div>
+    <div class="k">All tickets</div>
+  </div>
+  {% for s in statuses %}
+    <div class="counter {{ s }} rise" style="--i:{{ loop.index }}">
+      <div class="n">{{ counts.get(s, 0) }}</div>
+      <div class="k">{{ s | pretty }}</div>
+    </div>
+  {% endfor %}
+</section>
+
+<nav class="filters" aria-label="Filter tickets by status">
+  <span class="lead">Filter</span>
+  <a class="chip" href="{{ url_for('index') }}" aria-current="{{ 'true' if not active else 'false' }}">All</a>
+  {% for s in statuses %}
+    <a class="chip" href="{{ url_for('index', status=s) }}"
+       aria-current="{{ 'true' if active == s else 'false' }}">{{ s | pretty }}</a>
+  {% endfor %}
+</nav>
+
+{% if tickets %}
+  <div class="queue-head" aria-hidden="true">
+    <span>Ref</span><span>Subject</span><span>State · Priority</span>
+  </div>
+  <ul class="queue">
+    {% for t in tickets %}
+      <li class="rise" style="--i:{{ loop.index0 }}">
+        <a class="ticket-link {{ t.status }}" href="{{ url_for('view_ticket', ticket_id=t.ticket_id) }}">
+          <span class="ref">{{ t.ticket_id | ref }}</span>
+          <span>
+            <span class="ticket-title">{{ t.title }}</span>
+            <span class="ticket-meta">
+              {{ t.created_by }} · {{ t.message_count }} message{{ '' if t.message_count == 1 else 's' }}
+              · updated {{ t.last_activity | when }}{% if t.category %} · {{ t.category }}{% endif %}
+            </span>
+          </span>
+          <span class="ticket-tags">
+            <span class="tag {{ t.status }}">{{ t.status | pretty }}</span>
+            <span class="tag {{ t.priority }}">{{ t.priority }}</span>
+          </span>
+        </a>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="empty">
+    {% if active %}No {{ active | pretty }} tickets right now.{% else %}No tickets yet — open the first one below.{% endif %}
+  </p>
+{% endif %}
+
+<section class="panel">
+  <h2>New ticket</h2>
+  <form method="post" action="{{ url_for('create_ticket') }}">
+    <label class="field">
+      <span>Title</span>
+      <input type="text" name="title" maxlength="200" required
+             placeholder="Short summary of the problem">
+    </label>
+
+    <div class="row-3">
+      <label class="field">
+        <span>Reported by</span>
+        <input type="text" name="created_by" required placeholder="name or email">
+      </label>
+      <label class="field">
+        <span>Priority</span>
+        <select name="priority">
+          {% for p in priorities %}
+            <option value="{{ p }}" {% if p == 'medium' %}selected{% endif %}>{{ p }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label class="field">
+        <span>Category</span>
+        <input type="text" name="category" placeholder="access, bug, billing…">
+      </label>
+    </div>
+
+    <label class="field">
+      <span>First message (optional)</span>
+      <textarea name="first_message" maxlength="4000"
+                placeholder="What happened, and what did you expect instead?"></textarea>
+    </label>
+
+    <button type="submit">Create ticket</button>
+  </form>
+</section>
+{% endblock %}

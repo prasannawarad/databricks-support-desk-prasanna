@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} · Support Desk{% endblock %}
+
+{% block content %}
+<div class="errpage">
+  <div class="code">Error {{ code }}</div>
+  <h1>{{ message }}</h1>
+  {% if detail %}<pre>{{ detail }}</pre>{% endif %}
+  <p><a class="crumb" href="{{ url_for('index') }}">← Back to all tickets</a></p>
+</div>
+{% endblock %}

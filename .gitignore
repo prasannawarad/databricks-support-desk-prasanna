@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Local config and secrets — never commit
+.env
+
+# Submission bundle
+*.zip
+
+# OS / editor noise
+.DS_Store
+.idea/
+.vscode/
