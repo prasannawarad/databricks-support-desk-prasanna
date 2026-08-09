@@ -1,28 +1,45 @@
--- Run this in the Lakebase SQL Editor BEFORE deploying.
--- Replace every <CLIENT_ID> with the app's DATABRICKS_CLIENT_ID
--- (Databricks App → Environment tab). Keep the double quotes.
+-- Lakebase permissions for the Databricks App service principal
+-- Database: databricks_postgres
+-- Branch: production
+-- Project: new-database
 
 CREATE EXTENSION IF NOT EXISTS databricks_auth;
 
--- Postgres role for the app's service principal, authenticated by OAuth
-SELECT databricks_create_role('<CLIENT_ID>', 'service_principal');
+-- Create an OAuth-enabled Postgres role for the Databricks App.
+-- This must be the App's DATABRICKS_CLIENT_ID.
+SELECT databricks_create_role(
+    '5b192094-9293-4ebd-8734-7f77c0ffd2a1',
+    'SERVICE_PRINCIPAL'
+);
 
-GRANT CONNECT ON DATABASE databricks_postgres TO "<CLIENT_ID>";
-GRANT USAGE  ON SCHEMA public                 TO "<CLIENT_ID>";
+-- Database and schema access
+GRANT CONNECT ON DATABASE databricks_postgres
+    TO "5b192094-9293-4ebd-8734-7f77c0ffd2a1";
 
--- Table and sequence access (service principals inherit nothing by default)
-GRANT SELECT, INSERT, UPDATE, DELETE ON tickets         TO "<CLIENT_ID>";
-GRANT SELECT, INSERT, UPDATE, DELETE ON ticket_messages TO "<CLIENT_ID>";
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public   TO "<CLIENT_ID>";
+GRANT USAGE ON SCHEMA public
+    TO "5b192094-9293-4ebd-8734-7f77c0ffd2a1";
 
--- Anything created later in this schema is covered too
+-- Ticket table permissions
+GRANT SELECT, INSERT, UPDATE, DELETE
+    ON TABLE tickets
+    TO "5b192094-9293-4ebd-8734-7f77c0ffd2a1";
+
+-- Ticket message permissions
+GRANT SELECT, INSERT, UPDATE, DELETE
+    ON TABLE ticket_messages
+    TO "5b192094-9293-4ebd-8734-7f77c0ffd2a1";
+
+-- Needed if your tables use SERIAL/IDENTITY sequences
+GRANT USAGE, SELECT
+    ON ALL SEQUENCES IN SCHEMA public
+    TO "5b192094-9293-4ebd-8734-7f77c0ffd2a1";
+
+-- Automatically grant table permissions to tables created later
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "<CLIENT_ID>";
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-    GRANT USAGE, SELECT ON SEQUENCES TO "<CLIENT_ID>";
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES
+    TO "5b192094-9293-4ebd-8734-7f77c0ffd2a1";
 
--- Verify
-SELECT table_name, privilege_type
-FROM information_schema.role_table_grants
-WHERE grantee = '<CLIENT_ID>'
-ORDER BY table_name, privilege_type;
+-- Automatically grant sequence permissions to sequences created later
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+    GRANT USAGE, SELECT ON SEQUENCES
+    TO "5b192094-9293-4ebd-8734-7f77c0ffd2a1";
